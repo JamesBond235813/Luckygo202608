@@ -1,0 +1,42 @@
+[
+  {
+    "name": "Write",
+    "len": 12129
+  },
+  {
+    "name": "Write",
+    "len": 5121
+  },
+  {
+    "name": "Write",
+    "len": 14953
+  },
+  {
+    "name": "Write",
+    "len": 14212
+  },
+  {
+    "name": "Write",
+    "len": 14573
+  },
+  {
+    "name": "Write",
+    "len": 14898
+  },
+  {
+    "name": "StrReplace",
+    "len": 3236
+  },
+  {
+    "name": "StrReplace",
+    "len": 1060
+  },
+  {
+    "name": "StrReplace",
+    "len": 1067
+  },
+  {
+    "name": "StrReplace",
+    "len": 2555
+  }
+]

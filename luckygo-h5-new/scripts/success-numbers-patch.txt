@@ -1,0 +1,17 @@
+                                    <div className="max-h-[4.5rem] overflow-hidden">
+                                        <div className="flex flex-wrap gap-2">
+                                            {purchasedNumbers.map((number) => (
+                                                <span
+                                                    key={number}
+                                                    className="rounded bg-ghana-green/10 px-2 py-1 font-mono text-xs font-bold leading-tight text-ghana-green"
+                                                >
+                                                    {number}
+                                                </span>
+                                            ))}
+                                        </div>
+                                    </div>
+                                    {purchasedNumbers.length > 6 && (
+                                        <p className="mt-1.5 text-[10px] leading-snug text-gray-400 dark:text-slate-500">
+                                            {t('productNumbersSeeAll')}
+                                        </p>
+                                    )}

@@ -1,0 +1,40 @@
+            {confirmOpen && (
+                <div className="fixed inset-0 z-[65] flex items-center justify-center bg-black/50 px-6">
+                    <div className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-2xl dark:bg-dark-card">
+                        <h3 className="mb-2 text-lg font-black text-gray-900 dark:text-slate-100">{t('productConfirmTitle')}</h3>
+                        <p className="mb-4 text-sm text-gray-500 dark:text-slate-400">{t('productConfirmHint')}</p>
+                        <div className="mb-4 space-y-2 rounded-xl bg-gray-50 p-3 text-sm dark:bg-slate-800/80">
+                            <div className="flex justify-between gap-2">
+                                <span className="text-gray-500">{t('productConfirmProduct')}</span>
+                                <span className="max-w-[60%] text-right font-semibold line-clamp-2">{product.title}</span>
+                            </div>
+                            <div className="flex justify-between">
+                                <span className="text-gray-500">{t('productConfirmShares')}</span>
+                                <span className="font-semibold">{formatProductNumber(normalizedShares)}</span>
+                            </div>
+                            <div className="flex justify-between">
+                                <span className="text-gray-500">{t('productConfirmTotal')}</span>
+                                <span className="font-black text-ghana-green">{formatCurrencyPlain(orderTotal)}</span>
+                            </div>
+                        </div>
+                        <div className="flex gap-3">
+                            <button
+                                type="button"
+                                onClick={() => setConfirmOpen(false)}
+                                className="flex-1 rounded-xl border border-gray-200 py-3 font-bold text-gray-600 dark:border-slate-600"
+                            >
+                                {t('commonCancel')}
+                            </button>
+                            <button
+                                type="button"
+                                onClick={confirmPlaceOrder}
+                                className="flex-1 rounded-xl bg-ghana-green py-3 font-black text-white"
+                            >
+                                {t('productConfirmSubmit')}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {showSuccess && (

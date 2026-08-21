@@ -1,0 +1,296 @@
+.admin-shell-header {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    background: #fff;
+    border-bottom: 1px solid #e8edf3;
+}
+
+.admin-topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    min-height: 52px;
+    padding: 0 16px;
+    background: #fff;
+    border-bottom: 1px solid #f0f2f5;
+}
+
+.admin-topbar-left {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+    flex: 1;
+}
+
+.admin-topbar-right {
+    flex-shrink: 0;
+}
+
+.admin-topbar-icon-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    color: #475569;
+}
+
+.admin-topbar-icon-btn:hover {
+    background: #f8fafc !important;
+    color: #047857 !important;
+}
+
+.admin-breadcrumb {
+    min-width: 0;
+}
+
+.admin-breadcrumb-muted {
+    color: #94a3b8;
+    font-size: 13px;
+}
+
+.admin-breadcrumb-current {
+    color: #0f172a;
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.admin-account-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    border: 1px solid #e8edf3;
+    background: #fff;
+    border-radius: 999px;
+    padding: 4px 12px 4px 4px;
+    cursor: pointer;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.admin-account-chip:hover {
+    border-color: #a7f3d0;
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.08);
+}
+
+.admin-account-avatar {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #059669, #047857);
+    color: #fff;
+    font-size: 14px;
+}
+
+.admin-account-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: #334155;
+    max-width: 120px;
+}
+
+/* 下层标签栏：纯白底 */
+.admin-tabbar {
+    display: flex;
+    align-items: stretch;
+    min-height: 48px;
+    background: #fff;
+}
+
+.admin-tabbar-scroll {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+    min-width: 0;
+    overflow-x: auto;
+    padding: 8px 12px;
+    scrollbar-width: thin;
+}
+
+.admin-tabbar-scroll::-webkit-scrollbar {
+    height: 4px;
+}
+
+.admin-tabbar-scroll::-webkit-scrollbar-thumb {
+    background: #e2e8f0;
+    border-radius: 4px;
+}
+
+.admin-tab-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    max-width: 200px;
+    height: 32px;
+    padding: 0 12px;
+    border: 1px solid #e2e8f0;
+    border-radius: 4px;
+    background: #fff;
+    color: #64748b;
+    cursor: pointer;
+    user-select: none;
+    flex-shrink: 0;
+    transition:
+        border-color 0.15s,
+        color 0.15s,
+        background 0.15s;
+}
+
+.admin-tab-item:hover {
+    border-color: #cbd5e1;
+    background: #fafbfc;
+    color: #475569;
+}
+
+.admin-tab-item-active {
+    border-color: #047857;
+    background: #fff;
+    color: #047857;
+    font-weight: 400;
+}
+
+.admin-tab-item-active:hover {
+    border-color: #047857;
+    background: #fff;
+    color: #047857;
+}
+
+.admin-tab-title {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 13px;
+    line-height: 1;
+}
+
+.admin-tab-close {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    border: none;
+    border-radius: 4px;
+    background: transparent;
+    color: #94a3b8;
+    cursor: pointer;
+    padding: 0;
+    font-size: 10px;
+    opacity: 0;
+    transition: opacity 0.15s, background 0.15s, color 0.15s;
+}
+
+.admin-tab-item:hover .admin-tab-close,
+.admin-tab-item-active .admin-tab-close {
+    opacity: 1;
+}
+
+.admin-tab-item-active .admin-tab-close {
+    color: #64748b;
+}
+
+.admin-tab-close:hover {
+    background: #fee2e2;
+    color: #dc2626;
+}
+
+.admin-tabbar-actions {
+    display: flex;
+    align-items: center;
+    padding: 0 12px 0 4px;
+    background: #fff;
+    flex-shrink: 0;
+}
+
+.admin-tabbar-actions .ant-dropdown-trigger {
+    outline: none;
+    box-shadow: none;
+}
+
+.admin-tabbar-actions .ant-dropdown-trigger:hover,
+.admin-tabbar-actions .ant-dropdown-trigger:focus,
+.admin-tabbar-actions .ant-dropdown-trigger:focus-visible {
+    outline: none;
+    box-shadow: none;
+}
+
+.admin-tabbar-menu-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    margin: 0;
+    padding: 0 6px 0 8px;
+    height: 32px;
+    border: none;
+    outline: none;
+    box-shadow: none;
+    border-radius: 4px;
+    background: transparent;
+    color: #64748b;
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 1;
+    cursor: pointer;
+    appearance: none;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.admin-tabbar-menu-btn:hover,
+.admin-tabbar-menu-btn:focus,
+.admin-tabbar-menu-btn:focus-visible,
+.admin-tabbar-menu-btn:active {
+    color: #64748b;
+    background: transparent;
+    border: none;
+    outline: none;
+    box-shadow: none;
+}
+
+.admin-tabbar-menu-chevron {
+    font-size: 11px;
+    color: #94a3b8;
+}
+
+.admin-shell-content {
+    margin: 16px;
+    padding: 20px;
+    background: #fff;
+    border-radius: 12px;
+    min-height: calc(100vh - 120px);
+    border: 1px solid #e8edf3;
+}
+
+.admin-sider-logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 18px 16px 10px;
+    font-size: 17px;
+    font-weight: 700;
+    color: #34d399;
+    overflow: hidden;
+    white-space: nowrap;
+}
+
+.admin-sider-logo-mark {
+    flex-shrink: 0;
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    background: linear-gradient(135deg, #10b981, #047857);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-size: 14px;
+    font-weight: 800;
+}
+
+.admin-sider-logo-text {
+    overflow: hidden;
+    text-overflow: ellipsis;
+}

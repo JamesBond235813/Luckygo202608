@@ -1,0 +1,42 @@
+{
+  "name": "luckygo-server",
+  "version": "1.0.0",
+  "private": true,
+  "description": "EBA Promo",
+  "scripts": {
+    "build": "npx nest build",
+    "start": "npx nest start",
+    "start:dev": "npx nest start --watch",
+    "start:prod": "node dist/main.js",
+    "db:test": "node scripts/db/test-connection.cjs",
+    "db:migrate": "node scripts/db/run-migrations.cjs"
+  },
+  "dependencies": {
+    "@nestjs/bullmq": "^11.0.4",
+    "@nestjs/common": "^10.4.15",
+    "@nestjs/config": "^3.3.0",
+    "@nestjs/core": "^10.4.15",
+    "@nestjs/platform-express": "^10.4.15",
+    "@nestjs/schedule": "^4.1.2",
+    "ali-oss": "^6.23.0",
+    "bullmq": "^5.76.10",
+    "dotenv": "^16.4.5",
+    "ioredis": "^5.10.1",
+    "jsonwebtoken": "^9.0.2",
+    "mysql2": "^3.11.5",
+    "reflect-metadata": "^0.2.2",
+    "rxjs": "^7.8.1"
+  },
+  "devDependencies": {
+    "@nestjs/cli": "^10.4.9",
+    "@nestjs/schematics": "^10.2.3",
+    "@types/express": "^4.17.21",
+    "@types/jsonwebtoken": "^9.0.7",
+    "@types/multer": "^2.1.0",
+    "@types/node": "^20.17.10",
+    "typescript": "^5.7.2"
+  },
+  "engines": {
+    "node": ">=16.9.0"
+  }
+}

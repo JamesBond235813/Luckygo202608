@@ -1,0 +1,259 @@
+import React, { useState } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import type { Product } from '../types';
+import { ApiService, getApiErrorMessage } from '../services/api';
+import { formatCurrency, tf } from '../lib/localization';
+import { useI18n } from '../lib/useI18n';
+
+const ProductDetails: React.FC = () => {
+    const { id } = useParams();
+    const navigate = useNavigate();
+    const { t } = useI18n();
+    const [shares, setShares] = useState(1);
+    const [isSnatching, setIsSnatching] = useState(false);
+    const [showSuccess, setShowSuccess] = useState(false);
+    const [purchasedNumbers, setPurchasedNumbers] = useState<number[]>([]);
+    const [rulesOpen, setRulesOpen] = useState(false);
+    const [product, setProduct] = useState<Product | null>(null);
+
+    const fetchProduct = React.useCallback(async () => {
+        if (!id) return;
+        try {
+            const data = await ApiService.getProduct(id);
+            setProduct(data);
+        } catch (e) {
+            console.error(e);
+        }
+    }, [id]);
+
+    React.useEffect(() => {
+        void fetchProduct();
+    }, [fetchProduct]);
+
+    if (!product) return <div className="p-10 text-center">{t('productLoading')}</div>;
+
+    const progress = (product.sharesSold / product.totalShares) * 100;
+    const remainingShares = Math.max(product.totalShares - product.sharesSold, 0);
+    const normalizedShares = Math.min(Math.max(shares, 1), Math.max(remainingShares, 1));
+
+    const handleSnatch = () => {
+        if (remainingShares <= 0) {
+            alert(t('productAlertFullyFunded'));
+            return;
+        }
+        setIsSnatching(true);
+        ApiService.placeOrder({ productId: product.id, count: normalizedShares })
+            .then(async (result) => {
+                setPurchasedNumbers(result.numbers || []);
+                setShowSuccess(true);
+                await fetchProduct();
+            })
+            .catch((e) => {
+                console.error(e);
+                alert(getApiErrorMessage(e, t('productOrderFailed')));
+            })
+            .finally(() => {
+                setIsSnatching(false);
+            });
+    };
+
+    const shareProduct = async () => {
+        const url = window.location.href;
+        try {
+            if (navigator.share) {
+                await navigator.share({ title: product.title, text: tf(t, 'productShareText', { title: product.title }), url });
+            } else {
+                await navigator.clipboard?.writeText(url);
+                alert(t('productLinkCopied'));
+            }
+        } catch {
+            await navigator.clipboard?.writeText(url);
+            alert(t('productLinkCopied'));
+        }
+    };
+
+    return (
+        <motionlessLoading t={t} hidden product={product}>
+            <div className="bg-surface dark:bg-dark-surface min-h-screen pb-32 relative transition-colors duration-300">
+                <header className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-4 py-2.5 bg-white/90 dark:bg-dark-card/90 backdrop-blur-md border-b border-gray-100 dark:border-slate-800">
+                    <button
+                        type="button"
+                        onClick={() => navigate(-1)}
+                        className="flex size-10 items-center justify-center rounded-full hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors"
+                    >
+                        <span className="material-symbols-outlined text-gray-900 dark:text-slate-100">arrow_back</span>
+                    </button>
+                    <h1 className="text-sm font-bold tracking-tight text-gray-900 dark:text-slate-100 uppercase">{t('productDetailsTitle')}</h1>
+                    <button
+                        type="button"
+                        onClick={() => void shareProduct()}
+                        className="flex size-10 items-center justify-center rounded-full hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors"
+                    >
+                        <span className="material-symbols-outlined text-gray-900 dark:text-slate-100">share</span>
+                    </button>
+                </header>
+
+                <main className="pt-[61px]">
+                    <div className="h-[38vh] max-h-[320px] min-h-[220px] w-full bg-white dark:bg-slate-900 relative overflow-hidden">
+                        <img src={product.image} className="w-full h-full object-cover" alt="" />
+                    </div>
+
+                    <div className="px-5 py-4 space-y-3">
+                        <div className="space-y-2">
+                            <div className="grid grid-cols-[88px_1fr] items-start gap-2">
+                                {product.tag && (
+                                    <span className="mt-0.5 rounded bg-ghana-red px-2 py-1 text-center text-[10px] font-black uppercase leading-3 text-white shadow-sm">
+                                        {product.tag}
+                                    </span>
+                                )}
+                                <h2 className="text-lg font-extrabold text-gray-900 dark:text-slate-100 leading-tight line-clamp-2">
+                                    {product.title}
+                                </h2>
+                            </div>
+                            <p className="text-sm text-gray-500 dark:text-slate-400 leading-6 line-clamp-2">{product.description}</p>
+                        </div>
+
+                        <div className="bg-white dark:bg-dark-card rounded-2xl p-4 shadow-sm border border-gray-100 dark:border-slate-800 transition-colors">
+                            <div className="flex items-baseline gap-2 mb-3">
+                                <span className="text-ghana-red text-2xl font-black">{formatCurrency(product.pricePerShare)}</span>
+                                <span className="text-gray-400 dark:text-slate-500 text-sm font-medium">{t('commonPerShare')}</span>
+                            </div>
+
+                            <motionlessLoading t={t} hidden product={product}>
+                                <div className="space-y-2">
+                                    <div className="flex justify-between text-xs font-bold">
+                                        <span className="text-ghana-green">{tf(t, 'commonFunded', { pct: Math.round(progress) })}</span>
+                                        <span className="text-gray-400 dark:text-slate-500">
+                                            {tf(t, 'productSharesProgress', { sold: String(product.sharesSold), total: String(product.totalShares) })}
+                                        </span>
+                                    </div>
+                                    <div className="h-2.5 w-full bg-gray-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                                        <div
+                                            className="h-full bg-gradient-to-r from-ghana-green to-emerald-400 rounded-full transition-all duration-1000"
+                                            style={{ width: `${progress}%` }}
+                                        />
+                                    </div>
+                                </div>
+                            </motionlessLoading>
+                        </div>
+
+                        <div className="space-y-3">
+                            <div className="bg-white p-3 rounded-xl border border-gray-100 dark:bg-dark-card dark:border-slate-800">
+                                <button
+                                    type="button"
+                                    onClick={() => setRulesOpen(!rulesOpen)}
+                                    className="w-full flex items-center justify-between"
+                                >
+                                    <h4 className="font-bold text-sm">{t('productDrawRules')}</h4>
+                                    <span className={`material-symbols-outlined transition-transform ${rulesOpen ? 'rotate-180' : ''}`}>
+                                        expand_more
+                                    </span>
+                                </button>
+                                {rulesOpen && (
+                                    <div className="mt-2 space-y-1.5 text-xs text-gray-500 dark:text-slate-400">
+                                        <p>{t('productRule1')}</p>
+                                        <p>{t('productRule2')}</p>
+                                        <p>{t('productRule3')}</p>
+                                        <p>{t('productRule4')}</p>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                </main>
+
+                <footer className="fixed bottom-0 left-0 right-0 z-50 bg-white dark:bg-dark-card border-t border-gray-100 dark:border-slate-800 px-5 pt-3 pb-6 transition-colors">
+                    <div className="flex items-center gap-3">
+                        <div className="flex h-12 w-36 shrink-0 items-center justify-between bg-gray-50 dark:bg-slate-800 px-3 rounded-xl border border-gray-100 dark:border-slate-700">
+                            <button
+                                type="button"
+                                onClick={() => setShares(Math.max(1, normalizedShares - 1))}
+                                className="text-gray-400 dark:text-slate-500 hover:text-ghana-green"
+                            >
+                                <span className="material-symbols-outlined text-xl">remove</span>
+                            </button>
+                            <input
+                                type="number"
+                                min={1}
+                                max={remainingShares}
+                                value={normalizedShares}
+                                onChange={(e) => {
+                                    const next = parseInt(e.target.value, 10) || 1;
+                                    setShares(Math.min(Math.max(next, 1), Math.max(remainingShares, 1)));
+                                }}
+                                className="w-12 bg-transparent text-center text-lg font-black text-gray-900 dark:text-slate-100 border-none focus:ring-0 p-0"
+                            />
+                            <button
+                                type="button"
+                                onClick={() => setShares(Math.min(normalizedShares + 1, Math.max(remainingShares, 1)))}
+                                className="text-gray-400 dark:text-slate-500 hover:text-ghana-green"
+                            >
+                                <span className="material-symbols-outlined text-xl">add</span>
+                            </button>
+                        </div>
+                        <button
+                            type="button"
+                            onClick={handleSnatch}
+                            disabled={isSnatching}
+                            className="min-w-0 flex-1 bg-primary hover:bg-primary-hover text-ghana-green-dark font-black text-sm h-12 rounded-2xl shadow-xl shadow-primary/20 flex items-center justify-center gap-2 transition-all active:scale-[0.98] disabled:opacity-70"
+                        >
+                            {isSnatching ? (
+                                <span>{t('productProcessing')}</span>
+                            ) : (
+                                <>
+                                    <span className="material-symbols-outlined filled text-xl">bolt</span>
+                                    <span className="truncate">{tf(t, 'productSnatchCta', { n: normalizedShares })}</span>
+                                </>
+                            )}
+                        </button>
+                    </div>
+                </footer>
+
+                {showSuccess && (
+                    <div className="fixed inset-0 z-[70] flex items-center justify-center px-6 bg-black/60 backdrop-blur-md">
+                        <div className="w-full max-w-sm bg-white dark:bg-dark-card rounded-3xl p-8 flex flex-col items-center text-center shadow-2xl transition-colors">
+                            <div className="size-20 rounded-full bg-ghana-green/10 flex items-center justify-center mb-6">
+                                <span className="material-symbols-outlined text-ghana-green text-5xl filled animate-bounce">verified</span>
+                            </div>
+                            <h3 className="text-2xl font-black text-gray-900 dark:text-slate-100 mb-2">{t('productSuccessTitle')}</h3>
+                            <p className="text-gray-500 dark:text-slate-400 mb-8 leading-relaxed">
+                                {tf(t, 'productSuccessBody', { n: normalizedShares })}
+                            </p>
+                            {purchasedNumbers.length > 0 && (
+                                <div className="mb-5 w-full rounded-xl bg-gray-50 dark:bg-slate-800/80 p-3 text-left">
+                                    <div className="text-xs font-bold text-gray-500 mb-2">{t('productYourNumbers')}</div>
+                                    <div className="flex flex-wrap gap-2">
+                                        {purchasedNumbers.map((number) => (
+                                            <span
+                                                key={number}
+                                                className="rounded bg-ghana-green/10 px-2 py-1 font-mono text-xs font-bold text-ghana-green"
+                                            >
+                                                {number}
+                                            </span>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+                            <button
+                                type="button"
+                                onClick={() => navigate('/participation')}
+                                className="mb-3 w-full bg-ghana-green text-white font-bold py-4 rounded-2xl shadow-lg active:scale-95 transition-all"
+                            >
+                                {t('productViewParticipation')}
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => setShowSuccess(false)}
+                                className="w-full bg-ghana-green text-white font-bold py-4 rounded-2xl shadow-lg active:scale-95 transition-all"
+                            >
+                                {t('productStayHere')}
+                            </button>
+                        </div>
+                    </div>
+                )}
+            </div>
+        </motionlessLoading>
+    );
+};
+
+export default ProductDetails;

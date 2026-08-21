@@ -1,0 +1,8 @@
+node_modules/
+dist/
+.env
+.env.production
+scripts/db/rds.env
+scripts/db/backup-luckygo.sql
+*.log
+uploads/

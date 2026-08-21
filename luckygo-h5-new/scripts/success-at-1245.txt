@@ -1,0 +1,25 @@
+{showSuccess && (
+                <div className="fixed inset-0 z-[70] flex items-center justify-center px-6 bg-black/60 backdrop-blur-md">
+                    <div className="w-full max-w-sm bg-white dark:bg-dark-card rounded-3xl p-8 flex flex-col items-center text-center shadow-2xl transition-colors">
+                        <div className="size-20 rounded-full bg-ghana-green/10 flex items-center justify-center mb-6">
+                            <span className="material-symbols-outlined text-ghana-green text-5xl filled animate-bounce">verified</span>
+                        </div>
+                        <h3 className="text-2xl font-black text-gray-900 dark:text-slate-100 mb-2">{t('productSuccessTitle')}</h3>
+                        <p className="text-gray-500 dark:text-slate-400 mb-8 leading-relaxed">
+                            {tf(t, 'productSuccessBody', { n: normalizedShares })}
+                        </p>
+                        {purchasedNumbers.length > 0 && (
+                            <div className="mb-5 w-full rounded-xl bg-gray-50 dark:bg-slate-800/80 p-3 text-left">
+                                <motionlessLoading t={t} hidden product={product}>
+                                    <div className="text-xs font-bold text-gray-500 mb-2">{t('productYourNumbers')}</div>
+                                    <div className="flex flex-wrap gap-2">
+                                        {purchasedNumbers.map((number) => (
+                                            <span
+                                                key={number}
+                                                className="rounded bg-ghana-green/10 px-2 py-1 font-mono text-xs font-bold text-ghana-green"
+                                            >
+                                                {number}
+                                            </span>
+                                        ))}
+                                    </div>
+                                </motionlessLoad

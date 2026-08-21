@@ -1,0 +1,2 @@
+export const DEFAULT_COMPLIANCE_POLICY_VERSION = '1';
+export const DEFAULT_MIN_AGE = 18;

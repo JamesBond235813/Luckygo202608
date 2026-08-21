@@ -1,0 +1,54 @@
+html,
+body,
+#root {
+  margin: 0;
+  min-height: 100%;
+}
+
+body {
+  font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+/* 按钮、输入框聚焦时的默认描边/阴影（Ant Design 6） */
+.ant-btn,
+.ant-btn:hover,
+.ant-btn:focus,
+.ant-btn:active,
+.ant-input,
+.ant-input:hover,
+.ant-input:focus,
+.ant-input-focused,
+.ant-input-affix-wrapper,
+.ant-input-affix-wrapper:hover,
+.ant-input-affix-wrapper-focused,
+.ant-input-number,
+.ant-input-number:hover,
+.ant-input-number-focused,
+.ant-select-selector,
+.ant-select-focused .ant-select-selector,
+.ant-select-open .ant-select-selector,
+.ant-picker,
+.ant-picker-focused,
+textarea.ant-input {
+  box-shadow: none !important;
+}
+
+/* 管理后台左侧菜单：加大项间距，避免拥挤 */
+.admin-sider-menu.ant-menu-dark.ant-menu-inline > .ant-menu-item,
+.admin-sider-menu.ant-menu-dark.ant-menu-inline > .ant-menu-submenu > .ant-menu-submenu-title {
+  margin-block: 10px;
+  height: 48px;
+  line-height: 48px;
+  border-radius: 8px;
+}
+
+.admin-sider-menu.ant-menu-dark .ant-menu-sub .ant-menu-item {
+  margin-block: 6px;
+  height: 44px;
+  line-height: 44px;
+  border-radius: 6px;
+}
+
+.admin-sider-menu.ant-menu-dark.ant-menu-inline > .ant-menu-submenu {
+  margin-block: 10px;
+}
