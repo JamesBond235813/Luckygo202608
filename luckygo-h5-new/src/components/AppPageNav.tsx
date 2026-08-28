@@ -1,6 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { cn } from '../lib/utils';
+import { ArrowLeft } from 'lucide-react';
 
 /**
  * 默认顶栏高度 60px。项目以 rem 为主时，按常见根字号 16px 折算为 `3.75rem`。
@@ -49,7 +50,7 @@ const defaultBackBtnClass =
 function DefaultBackButton({ onClick }: { onClick: () => void }) {
     return (
         <button type="button" onClick={onClick} className={defaultBackBtnClass} aria-label="Back">
-            <span className="material-symbols-outlined text-[24px] dark:text-slate-100">arrow_back</span>
+            <ArrowLeft size={22} strokeWidth={2.2} aria-hidden="true" />
         </button>
     );
 }

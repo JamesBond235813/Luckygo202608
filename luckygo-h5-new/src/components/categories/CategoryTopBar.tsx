@@ -1,5 +1,6 @@
 import { Popover } from 'antd-mobile';
 import { useMemo, useState } from 'react';
+import { Check, MoreHorizontal } from 'lucide-react';
 import { APP_PAGE_NAV_DEFAULT_HEIGHT } from '../AppPageNav';
 import { pickCategoryName } from '../../lib/category-display';
 import { cn } from '../../lib/utils';
@@ -96,9 +97,7 @@ export function CategoryTopBar({ categories, selectedId, onSelect }: CategoryTop
                     >
                         <span className="min-w-0 flex-1 truncate">{label}</span>
                         {active ? (
-                            <span className="material-symbols-outlined shrink-0 text-[18px] text-ghana-green dark:text-primary">
-                                check
-                            </span>
+                            <Check size={17} strokeWidth={2.5} className="shrink-0 text-ghana-green dark:text-primary" aria-hidden="true" />
                         ) : null}
                     </button>
                 );
@@ -118,7 +117,7 @@ export function CategoryTopBar({ categories, selectedId, onSelect }: CategoryTop
                     : 'text-gray-600 hover:text-gray-900 dark:text-slate-400 dark:hover:text-slate-200',
             )}
         >
-            <span className="material-symbols-outlined text-[20px] leading-none">more_horiz</span>
+            <MoreHorizontal size={19} strokeWidth={2.4} aria-hidden="true" />
         </button>
     );
 

@@ -2,6 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useI18n } from '../lib/useI18n';
 import { tf } from '../lib/localization';
+import { promptLogin } from '../lib/require-login';
 import type { InviteMyRewards, InviteMyRewardsInvitee } from '../types';
 
 type RewardsTab = 'invites' | 'rebates';
@@ -86,7 +87,7 @@ export const InviteMyRewardsPanel: React.FC<InviteMyRewardsPanelProps> = ({
                 <p className="text-sm text-gray-600 dark:text-slate-400">{t('inviteMyRewardsLoginHint')}</p>
                 <button
                     type="button"
-                    onClick={() => navigate('/login', { state: { from: '/invite' } })}
+                    onClick={() => { promptLogin(navigate, t('authLoginRequired'), '/invite', 0); }}
                     className="mt-3 rounded-lg bg-ghana-green px-5 py-2 text-xs font-black text-white active:scale-95"
                 >
                     {t('inviteGetCodeCta')}

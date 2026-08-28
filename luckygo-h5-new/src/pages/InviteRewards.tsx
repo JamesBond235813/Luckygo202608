@@ -199,7 +199,7 @@ const InviteRewards: React.FC = () => {
                                 <p className="text-sm text-gray-600 dark:text-slate-400">{t('inviteCodeLoginHint')}</p>
                                 <button
                                     type="button"
-                                    onClick={() => navigate('/login', { state: { from: '/invite' } })}
+                                    onClick={() => { promptLogin(navigate, t('authLoginRequired'), '/invite', 0); }}
                                     className="mt-3 rounded-lg bg-primary px-5 py-2 text-xs font-black text-ghana-green active:scale-95"
                                 >
                                     {t('inviteGetCodeCta')}

@@ -2,6 +2,7 @@ import type { Product } from '../../types';
 import { formatCurrencyPlain, formatProductNumber, tf, tfProduct } from '../../lib/localization';
 import { resolveAssetUrl } from '../../lib/asset-url';
 import { DrawCountdownBanner } from '../DrawCountdownBanner';
+import { ChevronRight } from 'lucide-react';
 
 function fundProgress(product: Product) {
     const total = Math.max(product.totalShares, 1);
@@ -77,7 +78,7 @@ function ProductJoinCta({
             className="flex h-8 w-full items-center justify-center gap-0.5 overflow-hidden rounded-lg bg-[#00875a] px-2 text-xs font-bold leading-none text-white ring-1 ring-black/[0.04] transition-transform active:scale-[0.98]"
         >
             <span className="truncate">{actionLabel}</span>
-            <span className="material-symbols-outlined shrink-0 text-sm leading-none opacity-90">chevron_right</span>
+            <ChevronRight size={14} strokeWidth={2.5} className="shrink-0 opacity-90" aria-hidden="true" />
         </button>
     );
 }

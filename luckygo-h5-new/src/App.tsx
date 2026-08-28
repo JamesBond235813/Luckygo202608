@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Home from './pages/Home';
 import Categories from './pages/Categories';
@@ -34,6 +34,8 @@ const withBottomNav = (node: React.ReactNode) => (
 );
 
 function App() {
+    const [loginRequest, setLoginRequest] = useState<{ from: string } | null>(null);
+
     useEffect(() => {
         const applyTheme = () => {
             document.documentElement.classList.toggle('dark', localStorage.getItem('luckygo_dark_mode') === '1');
@@ -47,6 +49,15 @@ function App() {
         };
     }, []);
 
+    useEffect(() => {
+        const openLogin = (event: Event) => {
+            const from = (event as CustomEvent<{ from?: string }>).detail?.from || '/';
+            setLoginRequest({ from });
+        };
+        window.addEventListener('luckygo-open-login', openLogin);
+        return () => window.removeEventListener('luckygo-open-login', openLogin);
+    }, []);
+
     return (
         <BrowserRouter>
             <ScrollToTop />
@@ -54,6 +65,9 @@ function App() {
                 <UserProfileProvider>
                     <AgeComplianceProvider>
                         <AgeComplianceOverlays />
+                        {loginRequest ? (
+                            <Login modal from={loginRequest.from} onClose={() => setLoginRequest(null)} />
+                        ) : null}
                         <Routes>
                             <Route path="/login" element={<Login />} />
                             <Route path="/register" element={<Login />} />

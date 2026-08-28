@@ -533,32 +533,10 @@ const Me: React.FC = () => {
     };
 
     if (!isLoggedIn) {
-        const goLoginPage = () => navigate('/login', { state: { from: '/me' } });
-
         return (
             <div className="relative min-h-screen overflow-hidden bg-surface pb-24 text-gray-900 transition-colors dark:bg-dark-surface dark:text-slate-100">
                 <MePageAmbientBackground />
                 <div className="relative z-10 flex w-full flex-col px-4 pb-4 pt-10">
-                    <div className="mb-2 flex items-center justify-between gap-3">
-                        <div className="min-w-0 flex-1">
-                            <h1 className="text-[1.125rem] font-bold leading-tight tracking-tight text-gray-900 dark:text-slate-100">
-                                {t('meGuestTitle')}
-                            </h1>
-                            <p className="mt-1 text-[0.75rem] leading-[1.25rem] text-gray-500">{t('meGuestHint')}</p>
-                        </div>
-                        <button
-                            type="button"
-                            onClick={goLoginPage}
-                            className="relative flex h-8 w-20 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-gradient-to-r from-ghana-green via-[#00875a] to-[#006b3f] text-xs font-black text-white shadow-md shadow-ghana-green/20 active:scale-[0.99]"
-                        >
-                            <div
-                                className="pointer-events-none absolute -right-3 -top-4 size-10 rounded-full bg-primary/25 blur-xl"
-                                aria-hidden
-                            />
-                            <span className="relative z-10">{t('meGuestLogin')}</span>
-                        </button>
-                    </div>
-
                     <div className="py-4">
                         <div
                             role="presentation"
@@ -572,7 +550,10 @@ const Me: React.FC = () => {
                                         {t('meTotalBalance')}
                                         <button
                                             type="button"
-                                            onClick={toggleBalanceVisible}
+                                            onClick={(event) => {
+                                                if (!guardAuth('/wallet')) return;
+                                                toggleBalanceVisible(event);
+                                            }}
                                             className="inline-flex items-center justify-center rounded-full p-0.5 text-white/80 hover:bg-white/10 hover:text-white"
                                             aria-label={balanceVisible ? t('meHideBalance') : t('meShowBalance')}
                                         >
@@ -623,7 +604,10 @@ const Me: React.FC = () => {
 
                     <button
                         type="button"
-                        onClick={() => navigate('/rewards')}
+                        onClick={() => {
+                            if (!guardAuth('/rewards')) return;
+                            navigate('/rewards');
+                        }}
                         className="flex w-full items-center justify-between rounded-2xl border border-primary/30 bg-primary/10 p-4 text-left shadow-sm active:scale-[0.99]"
                     >
                         <div className="flex items-center gap-3">

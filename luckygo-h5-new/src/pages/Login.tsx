@@ -10,18 +10,24 @@ import { useAgeCompliance } from '../context/AgeComplianceContext';
 import { useI18n } from '../lib/useI18n';
 
 interface LocationState { from?: string; }
+interface LoginProps {
+    modal?: boolean;
+    onClose?: () => void;
+    from?: string;
+}
 
 const OTP_LENGTH = 6;
 const OTP_RESEND_SECONDS = 60;
 
-const Login: React.FC = () => {
+const Login: React.FC<LoginProps> = ({ modal = false, onClose, from: modalFrom }) => {
     const navigate = useNavigate();
     const location = useLocation();
     const [searchParams] = useSearchParams();
     const { t } = useI18n();
     const { config } = useAgeCompliance();
     const state = location.state as LocationState | null;
-    const otpRefs = useRef<Array<HTMLInputElement | null>>([]);
+    const returnPath = modalFrom || state?.from || '/';
+    const otpInputRef = useRef<HTMLInputElement | null>(null);
 
     const inviteFromUrl = useMemo(() => {
         const raw = searchParams.get('invite') || searchParams.get('code') || '';
@@ -54,6 +60,22 @@ const Login: React.FC = () => {
         return () => window.clearInterval(timer);
     }, [cooldown]);
 
+    useEffect(() => {
+        const previousOverflow = document.body.style.overflow;
+        if (modal) document.body.style.overflow = 'hidden';
+        return () => {
+            if (modal) document.body.style.overflow = previousOverflow;
+        };
+    }, [modal]);
+
+    const closeLogin = useCallback(() => {
+        if (onClose) {
+            onClose();
+            return;
+        }
+        navigate(returnPath, { replace: true });
+    }, [navigate, onClose, returnPath]);
+
     const sendCode = useCallback(async () => {
         setPhoneSubmitted(true);
         if (!isPhoneValid) {
@@ -67,7 +89,7 @@ const Login: React.FC = () => {
             setCode('');
             setCooldown(OTP_RESEND_SECONDS);
             showSimpleToast(data.message || t('loginOtpSent'));
-            window.setTimeout(() => otpRefs.current[0]?.focus(), 0);
+            window.setTimeout(() => otpInputRef.current?.focus(), 0);
         } catch (error) {
             showSimpleToast(getApiErrorMessage(error, t('loginOtpSendFailed')));
         } finally {
@@ -99,13 +121,14 @@ const Login: React.FC = () => {
             const storedPhone = (typeof data.user?.phone === 'string' && data.user.phone) || normalizedPhone;
             persistH5Login({ token: data.token, userId: parseUserIdFromToken(data.token), phone: storedPhone });
             showSimpleToast(data.isNewUser ? t('registerSuccess') : t('loginSuccess'));
-            navigate(state?.from || '/', { replace: true });
+            onClose?.();
+            navigate(returnPath, { replace: true });
         } catch (error) {
             showSimpleToast(getApiErrorMessage(error, t('loginOtpVerifyFailed')));
         } finally {
             setVerifying(false);
         }
-    }, [ageAccepted, code, e164Phone, inviteCode, isPhoneValid, navigate, normalizedPhone, state?.from, t]);
+    }, [ageAccepted, code, e164Phone, inviteCode, isPhoneValid, navigate, normalizedPhone, onClose, returnPath, t]);
 
     useEffect(() => {
         if (codeSent && ageAccepted && code.length === OTP_LENGTH && !verifying) {
@@ -113,59 +136,39 @@ const Login: React.FC = () => {
         }
     }, [ageAccepted, code, codeSent, verifying, verifyCode]);
 
-    const submit = useCallback(async () => {
-        if (!codeSent) {
-            await sendCode();
-            return;
-        }
-        await verifyCode();
-    }, [codeSent, sendCode, verifyCode]);
-
-    const updateOtp = (index: number, value: string) => {
-        const digits = value.replace(/\D/g, '');
-        if (!digits) {
-            const next = code.split('');
-            next[index] = '';
-            setCode(next.join(''));
-            return;
-        }
-        const next = code.split('');
-        digits.slice(0, OTP_LENGTH - index).split('').forEach((digit, offset) => { next[index + offset] = digit; });
-        setCode(next.join('').slice(0, OTP_LENGTH));
-        otpRefs.current[Math.min(index + digits.length, OTP_LENGTH - 1)]?.focus();
-    };
-
-    const handleOtpKeyDown = (index: number, event: React.KeyboardEvent<HTMLInputElement>) => {
-        if (event.key === 'Backspace' && !code[index] && index > 0) otpRefs.current[index - 1]?.focus();
-    };
+    useEffect(() => {
+        if (!codeSent || typeof navigator === 'undefined' || !('credentials' in navigator)) return;
+        const controller = new AbortController();
+        const credentials = navigator.credentials as CredentialsContainer & {
+            get: (options?: CredentialRequestOptions & { otp?: { transport: string[] }; signal?: AbortSignal }) => Promise<Credential | null>;
+        };
+        void credentials.get({ otp: { transport: ['sms'] }, signal: controller.signal })
+            .then((credential) => {
+                const smsCode = (credential as { code?: string } | null)?.code?.replace(/\D/g, '').slice(0, OTP_LENGTH);
+                if (smsCode) setCode(smsCode);
+            })
+            .catch(() => undefined);
+        return () => controller.abort();
+    }, [codeSent]);
 
     return (
-        <div className="min-h-[100dvh] bg-[#f4f7f5] text-slate-900 dark:bg-dark-surface dark:text-slate-100">
-            <header className="relative px-4 pb-4 pt-5">
-                <div className="mx-auto w-full max-w-md">
-                    <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-ghana-green via-[#00875a] to-[#006b3f] p-5 shadow-lg shadow-ghana-green/20">
-                        <div className="absolute -right-10 -top-10 size-32 rounded-full bg-primary/25 blur-2xl" aria-hidden />
-                        <div className="relative flex items-center gap-4">
-                            <div className="flex size-14 shrink-0 items-center justify-center rounded-full border-2 border-primary/80 bg-white/10 p-1.5 shadow-inner">
-                                <img src="/logo.png" alt="" className="size-full rounded-full object-contain" />
-                            </div>
-                            <div className="min-w-0 flex-1">
-                                <h1 className="text-xl font-black tracking-tight text-white">{t('appName')}</h1>
-                                <p className="mt-1 text-sm leading-5 text-white/80">{t('loginOtpSubtitle')}</p>
-                            </div>
-                        </div>
-                        <div className="relative mt-4 flex flex-wrap gap-2">
-                            <span className="rounded-full bg-white/15 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-primary">{t('meGuestWalletTeaser')}</span>
-                            <span className="rounded-full bg-white/10 px-2.5 py-1 text-[10px] font-bold text-white/90">+233</span>
-                        </div>
-                    </div>
-                </div>
-            </header>
-
-            <main className="mx-auto w-full max-w-md px-4 pb-8 pt-2">
-                <form className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-700 dark:bg-dark-card" onSubmit={(event) => { event.preventDefault(); void submit(); }}>
+        <div className="fixed inset-0 z-[80] flex items-center justify-center bg-black/40 p-3 sm:p-6" role="presentation">
+            <button
+                type="button"
+                aria-label={t('commonCancel')}
+                onClick={closeLogin}
+                className="absolute inset-0 cursor-default"
+            />
+            <section
+                role="dialog"
+                aria-modal="true"
+                aria-label={t('loginOtpTitle')}
+                className="relative z-10 flex max-h-[94dvh] w-full max-w-md flex-col overflow-hidden rounded-3xl bg-[#f4f7f5] text-slate-900 shadow-2xl dark:bg-dark-surface dark:text-slate-100"
+            >
+                <div className="min-h-0 overflow-y-auto">
+            <main className="mx-auto w-full max-w-md px-4 py-4 sm:px-5">
+                <form className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-700 dark:bg-dark-card" onSubmit={(event) => { event.preventDefault(); void verifyCode(); }}>
                     <div>
-                        <label htmlFor="phone" className="block text-sm font-bold text-slate-700 dark:text-slate-200">{t('loginMobileNumber')}</label>
                         <div className={`mt-2.5 flex h-14 items-center rounded-xl border bg-white px-3 transition focus-within:ring-2 focus-within:ring-ghana-green/15 dark:bg-dark-card ${showPhoneError ? 'border-ghana-red' : 'border-slate-300 focus-within:border-ghana-green dark:border-slate-600'}`}>
                             <span className="mr-2.5 text-2xl leading-none" aria-label="Ghana">🇬🇭</span>
                             <span className="border-r border-slate-300 pr-2.5 text-base font-bold text-slate-800 dark:border-slate-600 dark:text-slate-100">+233</span>
@@ -186,35 +189,29 @@ const Login: React.FC = () => {
                     </div>
 
                     <div className="mt-7">
-                        <div className="flex items-center justify-between gap-3">
-                            <label className="text-sm font-bold text-slate-700 dark:text-slate-200" htmlFor="otp-0">{t('loginOtpCode')}</label>
-                            <span className="text-xs font-medium text-slate-400 dark:text-slate-500">{t('loginOtpDigitCount').replace('{count}', String(OTP_LENGTH))}</span>
+                        <div className="flex items-center gap-2">
+                            <input
+                                ref={otpInputRef}
+                                id="otp-code"
+                                type="text"
+                                inputMode="numeric"
+                                autoComplete="one-time-code"
+                                maxLength={OTP_LENGTH}
+                                value={code}
+                                onChange={(event) => setCode(event.target.value.replace(/\D/g, '').slice(0, OTP_LENGTH))}
+                                placeholder={t('loginOtpPlaceholder')}
+                                className="h-12 min-w-0 flex-1 rounded-xl border border-slate-300 bg-white px-3 text-center text-lg font-bold tracking-[0.22em] text-slate-800 outline-none transition placeholder:font-medium placeholder:tracking-normal placeholder:text-slate-400 focus:border-ghana-green focus:ring-2 focus:ring-ghana-green/15 disabled:bg-slate-100 dark:border-slate-600 dark:bg-dark-card dark:text-slate-100 dark:placeholder:text-slate-400 dark:disabled:bg-slate-800"
+                                aria-label={t('loginOtpCode')}
+                                disabled={!codeSent}
+                            />
+                            <button type="button" onClick={() => void sendCode()} disabled={sendingCode || cooldown > 0} className="flex h-12 shrink-0 items-center justify-center rounded-xl bg-ghana-green px-3 text-xs font-bold text-white shadow-sm transition hover:bg-[#006b3f] disabled:cursor-not-allowed disabled:bg-slate-300 dark:disabled:bg-slate-700">
+                                {sendingCode ? t('loginOtpSending') : cooldown > 0 ? t('loginOtpResendCountdown').replace('{seconds}', String(cooldown)) : t('loginOtpSend')}
+                            </button>
                         </div>
-                        <div className="mt-2.5 flex gap-2">
-                            {Array.from({ length: OTP_LENGTH }, (_, index) => (
-                                <input
-                                    key={index}
-                                    ref={(element) => { otpRefs.current[index] = element; }}
-                                    id={`otp-${index}`}
-                                    type="text"
-                                    inputMode="numeric"
-                                    autoComplete={index === 0 ? 'one-time-code' : 'off'}
-                                    maxLength={OTP_LENGTH}
-                                    value={code[index] || ''}
-                                    onChange={(event) => updateOtp(index, event.target.value)}
-                                    onKeyDown={(event) => handleOtpKeyDown(index, event)}
-                                    className="h-12 min-w-0 flex-1 rounded-lg border border-slate-300 bg-white text-center text-xl font-bold text-slate-800 outline-none transition focus:border-ghana-green focus:ring-2 focus:ring-ghana-green/15 dark:border-slate-600 dark:bg-dark-card dark:text-slate-100"
-                                    aria-label={`${t('loginOtpCode')} ${index + 1}`}
-                                />
-                            ))}
-                        </div>
-                        <button type="button" onClick={() => void sendCode()} disabled={sendingCode || cooldown > 0} className="mt-3 text-xs font-semibold text-ghana-green hover:text-[#006b3f] disabled:cursor-not-allowed disabled:text-slate-400 dark:disabled:text-slate-500">
-                            {sendingCode ? t('loginOtpSending') : cooldown > 0 ? t('loginOtpResendCountdown').replace('{seconds}', String(cooldown)) : t('loginOtpSend')}
-                        </button>
                     </div>
 
-                    <div className="mt-6">
-                        <label htmlFor="inviteCode" className="block text-sm font-bold text-slate-700 dark:text-slate-200">{t('registerInviteCode')}</label>
+                    <div className="mt-6 flex items-center gap-3">
+                        <label htmlFor="inviteCode" className="shrink-0 text-sm font-bold text-slate-700 dark:text-slate-200">{t('registerInviteCode')}</label>
                         <input
                             id="inviteCode"
                             type="text"
@@ -226,7 +223,7 @@ const Login: React.FC = () => {
                             value={inviteCode}
                             onChange={(event) => { if (!inviteFromUrl) setInviteCode(event.target.value.replace(/[^a-zA-Z0-9]/g, '').slice(0, 8)); }}
                             placeholder={t('registerPlaceholderInviteCode')}
-                            className="mt-2.5 h-12 w-full rounded-xl border border-slate-300 bg-white px-3 text-sm font-medium outline-none transition focus:border-ghana-green focus:ring-2 focus:ring-ghana-green/15 dark:border-slate-600 dark:bg-dark-card dark:text-slate-100"
+                            className="h-12 min-w-0 flex-1 rounded-xl border border-slate-300 bg-white px-3 text-sm font-medium outline-none transition focus:border-ghana-green focus:ring-2 focus:ring-ghana-green/15 dark:border-slate-600 dark:bg-dark-card dark:text-slate-100"
                         />
                     </div>
 
@@ -238,25 +235,23 @@ const Login: React.FC = () => {
                         </label>
                     </div>
 
-                    <div className="pt-6">
-                        {!codeSent ? (
-                            <button type="submit" disabled={sendingCode || verifying} className="flex h-12 w-full items-center justify-center rounded-xl bg-ghana-green text-base font-bold text-white shadow-sm shadow-ghana-green/20 transition hover:bg-[#006b3f] active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-55">
-                                {sendingCode ? <Loader2 className="mr-2 size-5 animate-spin" aria-hidden /> : null}
-                                {sendingCode ? t('loginOtpSending') : t('loginOtpSend')}
-                            </button>
-                        ) : (
-                            <div className="flex h-12 items-center justify-center gap-2 rounded-xl bg-ghana-green/10 text-sm font-semibold text-ghana-green">
-                                {verifying ? <Loader2 className="size-4 animate-spin" aria-hidden /> : null}
-                                {verifying ? t('loginOtpVerifying') : ageAccepted ? t('loginOtpAutoVerify') : t('registerAgeRequired')}
-                            </div>
-                        )}
-                        <div className="mt-4 flex items-start gap-2 border-t border-slate-100 pt-4 text-xs leading-5 text-slate-500 dark:border-slate-700 dark:text-slate-400">
+                    <div className="mt-5 flex items-start gap-2 border-t border-slate-100 pt-4 text-xs leading-5 text-slate-500 dark:border-slate-700 dark:text-slate-400">
                             <span className="mt-0.5 flex size-4 shrink-0 items-center justify-center rounded-full bg-ghana-green text-white" aria-label={t('loginPrivacyAutoAccepted')}><Check className="size-3" strokeWidth={3} aria-hidden /></span>
                             <p>{t('loginPrivacyAutoAccepted')}{' '}<Link to="/terms" className="font-semibold text-ghana-green underline underline-offset-2">{t('privacyPolicy')}</Link>{' '}{t('loginPrivacyAnd')}{' '}<Link to="/terms" className="font-semibold text-ghana-green underline underline-offset-2">{t('termsConditions')}</Link>. {t('loginPrivacyLoginAgreement')}</p>
-                        </div>
+                    </div>
+                    <div className="mt-4 flex gap-2">
+                        <button type="button" onClick={closeLogin} className="flex h-12 flex-1 items-center justify-center rounded-xl border border-slate-300 bg-white text-sm font-bold text-slate-600 transition hover:bg-slate-50 dark:border-slate-600 dark:bg-dark-card dark:text-slate-200 dark:hover:bg-slate-800">
+                            {t('commonCancel')}
+                        </button>
+                        <button type="submit" disabled={!codeSent || sendingCode || verifying} className="flex h-12 flex-1 items-center justify-center rounded-xl bg-ghana-green text-sm font-bold text-white shadow-sm shadow-ghana-green/20 transition hover:bg-[#006b3f] active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-55">
+                            {verifying ? <Loader2 className="mr-2 size-5 animate-spin" aria-hidden /> : null}
+                            {verifying ? t('loginOtpVerifying') : t('authGoLogin')}
+                        </button>
                     </div>
                 </form>
             </main>
+                </div>
+            </section>
         </div>
     );
 };

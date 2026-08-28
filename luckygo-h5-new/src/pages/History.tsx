@@ -9,8 +9,16 @@ import { useI18n } from '../lib/useI18n';
 import { AppPageNav } from '../components/AppPageNav';
 import { HistoryListSkeleton } from '../components/history/HistorySkeleton';
 import { ghanaCalendarDate, parseGhanaDateTime } from '../lib/ghana-datetime';
+import { CalendarDays, ChevronDown, Trophy, UserRound, X } from 'lucide-react';
 
 type DateFilterKey = 'all' | 'today' | 'week' | 'month';
+
+const formatBetTime = (value: string) => {
+    const trimmed = value.trim();
+    const displayMatch = trimmed.match(/^(\d{2})\/(\d{2})\/(\d{4})\s+(\d{2}:\d{2}:\d{2})$/);
+    if (displayMatch) return `${displayMatch[3]}-${displayMatch[2]}-${displayMatch[1]} ${displayMatch[4]}`;
+    return trimmed.replace('T', ' ').replace(/\.\d{3}Z$/, '');
+};
 
 const History: React.FC = () => {
     const { t } = useI18n();
@@ -66,7 +74,7 @@ const History: React.FC = () => {
                         className="flex size-10 items-center justify-center rounded-full transition-colors hover:bg-gray-100 dark:hover:bg-slate-800"
                         aria-label={t('historyDateRange')}
                     >
-                        <span className="material-symbols-outlined text-gray-700 dark:text-slate-400">calendar_month</span>
+                        <CalendarDays size={19} strokeWidth={2.1} aria-hidden="true" />
                     </button>
                 }
             />
@@ -76,57 +84,82 @@ const History: React.FC = () => {
                     {loading ? (
                         <HistoryListSkeleton />
                     ) : visibleRecords.map((record) => (
-                        <details key={record.id} className="group bg-white dark:bg-dark-card rounded-2xl overflow-hidden shadow-sm border border-white dark:border-slate-800 transition-colors" open>
+                        <details key={record.id} className="group overflow-hidden rounded-[18px] border border-[#e5ebe7] bg-white shadow-[0_8px_24px_rgba(11,50,32,0.07)] transition-colors dark:border-slate-800 dark:bg-dark-card" open>
                             <summary className="cursor-pointer list-none select-none relative z-10 bg-inherit">
-                                <div className="p-4 flex gap-4">
-                                    <div className="shrink-0 relative">
-                                        <img src={record.productImage} className="w-20 h-20 rounded-xl bg-gray-50 dark:bg-slate-800 object-cover border border-gray-100 dark:border-slate-700" alt="" />
-                                        <div className="absolute -bottom-1.5 -right-1.5 bg-ghana-green text-white text-[9px] font-bold px-1.5 py-0.5 rounded shadow-sm border border-white dark:border-slate-900">
+                                <div className="flex gap-3.5 p-4 pb-3">
+                                    <div className="relative shrink-0">
+                                        <div className="flex size-[76px] items-center justify-center overflow-hidden rounded-2xl border border-[#e5ebe7] bg-[#f5f8f6] dark:border-slate-700 dark:bg-slate-800">
+                                            <img src={record.productImage} className="h-full w-full object-cover" alt="" />
+                                        </div>
+                                        <div className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-md bg-ghana-green px-2 py-0.5 text-[9px] font-black text-white shadow-sm ring-2 ring-white dark:ring-dark-card">
                                             {t('historyAwarded')}
                                         </div>
                                     </div>
-                                    <div className="flex-1 min-w-0 flex flex-col justify-between py-0.5">
-                                        <div>
-                                            <div className="flex justify-between items-start gap-2">
-                                                <h3 className="font-bold text-[15px] text-gray-900 dark:text-slate-100 leading-tight truncate">{record.productName}</h3>
-                                                <span className="shrink-0 text-[10px] text-gray-500 dark:text-slate-400 bg-gray-100 dark:bg-slate-800 px-1.5 py-0.5 rounded font-medium">{tf(t, 'historyIssueLine', { issue: String(record.issue) })}</span>
-                                            </div>
-                                            <p className="text-xs text-gray-500 dark:text-slate-400 mt-1">{tf(t, 'historyDrawLine', { time: record.drawTime || '' })}</p>
+                                    <div className="flex min-w-0 flex-1 flex-col">
+                                        <div className="flex items-start gap-2">
+                                            <h3 className="line-clamp-2 min-w-0 flex-1 text-[15px] font-extrabold leading-[1.25] text-gray-900 dark:text-slate-100">{record.productName}</h3>
+                                            <ChevronDown size={16} strokeWidth={2.2} className="mt-0.5 shrink-0 text-gray-400 transition-transform duration-300 group-open:rotate-180 dark:text-slate-500" aria-hidden="true" />
                                         </div>
-                                        <div className="flex items-end justify-between mt-2">
-                                            <div className="flex flex-col">
-                                                <span className="text-[10px] text-gray-500 dark:text-slate-500 mb-0.5 font-medium">{t('historyLuckyNumber')}</span>
-                                                <span className="text-ghana-green font-bold font-mono text-xl leading-none tracking-wide">{record.winningNumber}</span>
-                                            </div>
-                                            <div className="w-7 h-7 rounded-full bg-gray-50 dark:bg-slate-800 flex items-center justify-center transition-transform duration-300 group-open:-rotate-180 border border-gray-100 dark:border-slate-700">
-                                                <span className="material-symbols-outlined text-gray-400 dark:text-slate-500 text-lg">expand_more</span>
-                                            </div>
+                                        <div className="mt-1.5 flex items-center justify-between gap-2 text-[11px] font-medium text-gray-500 dark:text-slate-400">
+                                            <span>{tf(t, 'historyIssueLine', { issue: String(record.issue) })}</span>
+                                            <span className="text-right">{record.drawTime || '-'}</span>
+                                        </div>
+                                        <div className="mt-3 flex items-center justify-between gap-3 rounded-xl border border-ghana-green/10 bg-ghana-green/[0.06] px-3 py-2">
+                                            <span className="text-[10px] font-bold uppercase tracking-[0.08em] text-ghana-green/70">{t('historyLuckyNumber')}</span>
+                                            <span className="font-mono text-[22px] font-black leading-none tracking-[0.1em] text-ghana-green">{record.winningNumber}</span>
                                         </div>
                                     </div>
                                 </div>
                             </summary>
 
                             <div className="overflow-hidden transition-all duration-300">
-                                <div className="px-4 pb-5 pt-0">
-                                    <div className="h-px bg-gray-100 dark:bg-slate-800 mb-4"></div>
-
-                                    <div className="flex items-center justify-between">
-                                        <div className="flex items-center gap-3">
-                                            <div className="relative">
-                                                <div className="w-10 h-10 rounded-full p-[1.5px] bg-gradient-to-tr from-primary to-ghana-green">
-                                                    <img src={record.winnerAvatar} className="w-full h-full rounded-full object-cover border-2 border-white dark:border-slate-900" alt="" />
+                                <div className="px-4 pb-4 pt-0">
+                                    <div className="mb-3 h-px bg-[#edf1ee] dark:bg-slate-800"></div>
+                                    <div className="flex items-center justify-between rounded-xl bg-[#f6faf7] px-3 py-2.5 dark:bg-slate-800/60">
+                                        <div className="flex min-w-0 items-center gap-2.5">
+                                            <div className="relative shrink-0">
+                                                <div className="size-9 overflow-hidden rounded-full bg-gradient-to-tr from-primary to-ghana-green p-[1.5px]">
+                                                    <img src={record.winnerAvatar} className="h-full w-full rounded-full border-2 border-white object-cover dark:border-slate-900" alt="" />
                                                 </div>
-                                                <div className="absolute -bottom-1 -right-1 bg-primary text-black text-[8px] font-bold px-1 rounded-sm shadow-sm">{t('historyWinBadge')}</div>
+                                                <span className="absolute -bottom-1 -right-1 flex size-4 items-center justify-center rounded-full bg-primary text-[9px] text-gray-900 shadow-sm"><Trophy size={9} strokeWidth={2.8} /></span>
                                             </div>
+                                            <div className="min-w-0">
+                                                <p className="text-[10px] font-semibold text-gray-500 dark:text-slate-500">{t('historyWinnerLabel')}</p>
+                                                <p className="truncate text-sm font-extrabold text-gray-800 dark:text-slate-200">{record.winnerName}</p>
+                                            </div>
+                                        </div>
+                                        <div className="flex shrink-0 items-center gap-1.5 text-right">
+                                            <UserRound size={15} className="text-ghana-green/70" aria-hidden="true" />
                                             <div>
-                                                <p className="text-[10px] text-gray-500 dark:text-slate-500 font-medium">{t('historyWinnerLabel')}</p>
-                                                <p className="text-sm font-bold text-gray-800 dark:text-slate-200">{record.winnerName}</p>
+                                                <p className="text-[10px] font-semibold text-gray-500 dark:text-slate-500">{t('participationLabel')}</p>
+                                                <span className="text-sm font-extrabold text-gray-800 dark:text-slate-200">{formatProductNumber(record.totalShares)}</span>
                                             </div>
                                         </div>
-                                        <div className="text-right">
-                                            <p className="text-[10px] text-gray-500 dark:text-slate-500 font-medium">{t('participationLabel')}</p>
-                                            <span className="text-sm font-bold text-gray-800 dark:text-slate-200">{formatProductNumber(record.totalShares)}</span>
+                                    </div>
+                                    <div className="mt-3 overflow-hidden rounded-xl border border-[#e5ebe7] dark:border-slate-700">
+                                        <div className="border-b border-[#e5ebe7] bg-[#f8faf9] px-3 py-2 text-xs font-extrabold text-gray-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200">
+                                            {t('historyEntriesTitle')}
                                         </div>
+                                        {record.entries.length ? (
+                                            <>
+                                                <div className="grid grid-cols-[0.9fr_1.5fr_auto] gap-2 bg-white px-3 py-2 text-[10px] font-semibold text-gray-400 dark:bg-dark-card dark:text-slate-500">
+                                                    <span>{t('historyEntriesPhone')}</span>
+                                                    <span>{t('historyEntriesTime')}</span>
+                                                    <span className="text-right">{t('historyEntriesShares')}</span>
+                                                </div>
+                                                <div className="divide-y divide-[#edf1ee] dark:divide-slate-800">
+                                                    {record.entries.map((entry, index) => (
+                                                        <div key={`${entry.phone}-${entry.betTime}-${index}`} className="grid grid-cols-[0.9fr_1.5fr_auto] gap-2 bg-white px-3 py-2 text-[11px] text-gray-600 dark:bg-dark-card dark:text-slate-300">
+                                                            <span className="font-semibold tabular-nums">{entry.phone}</span>
+                                                            <span className="tabular-nums">{formatBetTime(entry.betTime)}</span>
+                                                            <span className="text-right font-bold tabular-nums text-ghana-green">{entry.shares}</span>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </>
+                                        ) : (
+                                            <p className="bg-white px-3 py-3 text-xs text-gray-400 dark:bg-dark-card dark:text-slate-500">{t('historyEntriesEmpty')}</p>
+                                        )}
                                     </div>
                                 </div>
                             </div>
@@ -146,7 +179,7 @@ const History: React.FC = () => {
                         <div className="flex items-center justify-between mb-4">
                             <h3 className="text-lg font-black">{t('historyDateRange')}</h3>
                             <button type="button" onClick={() => setCalendarOpen(false)} className="size-9 rounded-full bg-gray-100">
-                                <span className="material-symbols-outlined text-xl">close</span>
+                                <X size={18} strokeWidth={2.2} aria-hidden="true" />
                             </button>
                         </div>
                         <div className="grid grid-cols-2 gap-2 mb-4">

@@ -4,9 +4,9 @@ import { showSimpleToast } from './simpleToast';
 
 const LOGIN_REDIRECT_DELAY_MS = 500;
 
-/** 未登录时 toast，延迟后跳转登录页，返回是否已登录 */
+/** 未登录时提示并打开全局登录弹窗，返回是否已登录 */
 export function promptLogin(
-    navigate: NavigateFunction,
+    _navigate: NavigateFunction,
     message: string,
     fromPath?: string,
     delayMs: number = LOGIN_REDIRECT_DELAY_MS,
@@ -21,7 +21,7 @@ export function promptLogin(
             ? `${window.location.pathname}${window.location.search}`
             : '/');
     window.setTimeout(() => {
-        navigate('/login', { state: { from } });
+        window.dispatchEvent(new CustomEvent('luckygo-open-login', { detail: { from } }));
     }, delayMs);
     return false;
 }

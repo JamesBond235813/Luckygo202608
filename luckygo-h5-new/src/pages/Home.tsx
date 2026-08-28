@@ -13,6 +13,7 @@ import { showSimpleToast } from '../lib/simpleToast';
 import { useSupportContact } from '../hooks/useSupportContact';
 import { useI18n } from '../lib/useI18n';
 import type { Product } from '../types';
+import { ChevronRight, Zap } from 'lucide-react';
 
 const Home: React.FC = () => {
     const navigate = useNavigate();
@@ -98,10 +99,15 @@ const Home: React.FC = () => {
                         <HomeHeroCarousel />
 
                         <section>
-                            <h3 className="mb-3 flex items-center gap-1.5 text-base font-black text-gray-900 dark:text-slate-100">
-                                <span className="material-symbols-outlined filled text-xl text-ghana-red">bolt</span>
-                                {t('hotPicks')}
-                            </h3>
+                            <div className="mb-3 flex items-center justify-between">
+                                <h3 className="flex items-center gap-2 text-base font-black text-gray-900 dark:text-slate-100">
+                                    <span className="flex size-7 items-center justify-center rounded-lg bg-red-50 text-ghana-red dark:bg-red-950/40"><Zap size={16} strokeWidth={2.6} fill="currentColor" /></span>
+                                    {t('hotPicks')}
+                                </h3>
+                                <button type="button" onClick={() => navigate('/categories')} className="flex items-center gap-0.5 text-xs font-bold text-ghana-green">
+                                    {t('categories')} <ChevronRight size={14} strokeWidth={2.5} aria-hidden="true" />
+                                </button>
+                            </div>
 
                             {loading ? (
                                 <div className="space-y-2.5">

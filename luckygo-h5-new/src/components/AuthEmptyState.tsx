@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { useI18n } from '../lib/useI18n';
+import { promptLogin } from '../lib/require-login';
 
 interface AuthEmptyStateProps {
     /** 登录成功后回跳路径 */
@@ -22,7 +23,7 @@ export const AuthEmptyState = ({ from = '/', className = '' }: AuthEmptyStatePro
             </p>
             <button
                 type="button"
-                onClick={() => navigate('/login', { state: { from } })}
+                onClick={() => { promptLogin(navigate, t('authLoginRequired'), from, 0); }}
                 className="h-11 w-full max-w-xs rounded-lg bg-ghana-green text-sm font-black text-white"
             >
                 {t('authGoLogin')}

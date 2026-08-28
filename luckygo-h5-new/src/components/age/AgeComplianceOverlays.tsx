@@ -1,5 +1,6 @@
 import { useAgeCompliance } from '../../context/AgeComplianceContext';
 import { useI18n } from '../../lib/useI18n';
+import { ShieldAlert, TriangleAlert } from 'lucide-react';
 
 export function AgeComplianceOverlays() {
     const { t } = useI18n();
@@ -22,7 +23,7 @@ export function AgeComplianceOverlays() {
         return (
             <div className="fixed inset-0 z-[200] flex items-center justify-center bg-gray-100 p-6 dark:bg-dark-surface">
                 <div className="w-full max-w-md rounded-2xl bg-white p-6 text-center shadow-xl dark:bg-dark-card">
-                    <span className="material-symbols-outlined mb-3 text-5xl text-amber-500">block</span>
+                <ShieldAlert className="mb-3 text-amber-500" size={48} strokeWidth={1.8} />
                     <h2 className="mb-2 text-lg font-black text-gray-900 dark:text-slate-100">{config.minorTitle}</h2>
                     <p className="text-sm leading-relaxed text-gray-600 dark:text-slate-400">{config.minorBody}</p>
                 </div>
@@ -36,7 +37,7 @@ export function AgeComplianceOverlays() {
                 <div className="fixed inset-0 z-[190] flex items-center justify-center bg-black/55 p-4">
                     <div className="max-h-[90vh] w-full max-w-md overflow-y-auto rounded-2xl bg-white p-5 shadow-2xl dark:bg-dark-card">
                         <div className="mb-3 flex items-center gap-2 text-amber-600">
-                            <span className="material-symbols-outlined text-2xl">warning</span>
+                            <TriangleAlert size={22} strokeWidth={2.1} aria-hidden="true" />
                             <h2 className="text-lg font-black text-gray-900 dark:text-slate-100">{config.gateTitle}</h2>
                         </div>
                         <p className="mb-4 whitespace-pre-wrap text-sm leading-relaxed text-gray-700 dark:text-slate-300">

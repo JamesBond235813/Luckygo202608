@@ -33,25 +33,29 @@ const Rewards: React.FC = () => {
     useEffect(() => { void load(); }, [load]);
 
     const doCheckin = () => {
-        setBusy('checkin');
-        runAdultAction(() => void ApiService.checkinRewards()
-            .then((result) => {
-                showSimpleToast(t('rewardsCheckinSuccess').replace('{beans}', String(result.beans)));
-                return load();
-            })
-            .catch((error) => showSimpleToast(getApiErrorMessage(error, t('rewardsCheckinFailed'))))
-            .finally(() => setBusy('')));
+        runAdultAction(() => {
+            setBusy('checkin');
+            return ApiService.checkinRewards()
+                .then((result) => {
+                    showSimpleToast(t('rewardsCheckinSuccess').replace('{beans}', String(result.beans)));
+                    return load();
+                })
+                .catch((error) => showSimpleToast(getApiErrorMessage(error, t('rewardsCheckinFailed'))))
+                .finally(() => setBusy(''));
+        });
     };
 
     const claimTask = (code: string) => {
-        setBusy(code);
-        runAdultAction(() => void ApiService.claimRewardTask(code)
-            .then((result) => {
-                showSimpleToast(t('rewardsTaskClaimed').replace('{beans}', String(result.beans)));
-                return load();
-            })
-            .catch((error) => showSimpleToast(getApiErrorMessage(error, t('rewardsTaskClaimFailed'))))
-            .finally(() => setBusy('')));
+        runAdultAction(() => {
+            setBusy(code);
+            return ApiService.claimRewardTask(code)
+                .then((result) => {
+                    showSimpleToast(t('rewardsTaskClaimed').replace('{beans}', String(result.beans)));
+                    return load();
+                })
+                .catch((error) => showSimpleToast(getApiErrorMessage(error, t('rewardsTaskClaimFailed'))))
+                .finally(() => setBusy(''));
+        });
     };
 
     if (!loggedIn) {

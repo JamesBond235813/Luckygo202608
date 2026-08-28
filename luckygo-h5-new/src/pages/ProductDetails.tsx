@@ -76,7 +76,9 @@ const ProductDetails: React.FC = () => {
         );
     }
 
-    const progress = (product.sharesSold / product.totalShares) * 100;
+    const progress = product.totalShares > 0
+        ? Math.min(100, Math.max(0, (product.sharesSold / product.totalShares) * 100))
+        : 0;
     const remainingShares = Math.max(product.totalShares - product.sharesSold, 0);
     const minShares = resolveMinShareCount(product.pricePerShare);
     const maxShares = Math.max(remainingShares, minShares);

@@ -251,7 +251,7 @@ const Settings: React.FC = () => {
                     ) : (
                         <button
                             type="button"
-                            onClick={() => navigate('/login', { state: { from: '/settings' } })}
+                            onClick={() => { promptLogin(navigate, t('authLoginRequired'), '/settings', 0); }}
                             className="w-full rounded-2xl bg-ghana-green p-4 text-center text-[15px] font-bold text-white active:opacity-90 shadow-sm"
                         >
                             {t('authGoLogin')}

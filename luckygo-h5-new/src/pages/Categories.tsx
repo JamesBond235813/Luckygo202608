@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AppPageNav } from '../components/AppPageNav';
 import PullToRefresh from '../components/PullToRefresh';
@@ -19,32 +19,38 @@ const Categories: React.FC = () => {
     const [campaigns, setCampaigns] = useState<Product[]>([]);
     const [loadingCategories, setLoadingCategories] = useState(true);
     const [loadingCampaigns, setLoadingCampaigns] = useState(false);
+    const selectedCategoryIdRef = useRef<number | null>(null);
+    selectedCategoryIdRef.current = selectedCategoryId;
 
-    const loadCategories = useCallback(async () => {
+    const loadCategories = useCallback(async (): Promise<number | null> => {
         try {
             const rows = await ApiService.getProductCategories();
             const sorted = rows.sort((a, b) => a.sortOrder - b.sortOrder || a.id - b.id);
             setCategories(sorted);
-            setSelectedCategoryId((current) => {
+            const nextId = (() => {
+                const current = selectedCategoryIdRef.current;
                 if (current != null && sorted.some((c) => c.id === current)) return current;
                 return sorted[0]?.id ?? null;
-            });
+            })();
+            setSelectedCategoryId(nextId);
+            return nextId;
         } catch (error) {
             logUnexpectedApiError(error);
             showSimpleToast(getApiErrorMessage(error, t('categoriesLoadFailed')));
+            return null;
         } finally {
             setLoadingCategories(false);
         }
     }, [t]);
 
-    const loadCampaigns = useCallback(async () => {
-        if (selectedCategoryId == null) {
+    const loadCampaigns = useCallback(async (categoryId = selectedCategoryId) => {
+        if (categoryId == null) {
             setCampaigns([]);
             return;
         }
         setLoadingCampaigns(true);
         try {
-            const rows = await ApiService.getCampaigns(selectedCategoryId);
+            const rows = await ApiService.getCampaigns(categoryId);
             setCampaigns(rows);
         } catch (error) {
             logUnexpectedApiError(error);
@@ -70,8 +76,8 @@ const Categories: React.FC = () => {
     );
 
     const refreshAll = async () => {
-        await loadCategories();
-        await loadCampaigns();
+        const categoryId = await loadCategories();
+        await loadCampaigns(categoryId);
     };
 
     const productGrid = loadingCampaigns ? (

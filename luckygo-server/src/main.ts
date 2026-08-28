@@ -31,7 +31,7 @@ async function bootstrap(): Promise<void> {
 
   const port = Number(process.env.PORT ?? 3000);
   console.log('[EBA Promo server] starting on port', port);
-  await app.listen(port);
+  await app.listen(port, '0.0.0.0');
   console.log(`Server is running on port ${port}`);
 }
 

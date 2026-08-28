@@ -13,6 +13,7 @@ import {
   WINNING_FULFILLMENT_STATUSES,
   WINNING_STATUS_NEXT,
 } from './winning-status.constants';
+import { normalizeGhanaPhoneLocal } from '../auth/ghana/ghana-phone.util';
 
 @Injectable()
 export class HistoryService {
@@ -38,6 +39,45 @@ export class HistoryService {
     `;
     try {
       const [rows] = await this.pool.query<RowDataPacket[]>(query);
+      const campaignIds = rows
+        .map((row) => Number(row.campaign_id))
+        .filter((id) => Number.isInteger(id) && id > 0);
+      if (campaignIds.length) {
+        const [entries] = await this.pool.query<RowDataPacket[]>(
+          `SELECT ln.campaign_id, ln.user_id, u.phone,
+                  DATE_FORMAT(ln.sold_at, '%Y-%m-%d %H:%i:%s') AS bet_time,
+                  COUNT(*) AS shares
+           FROM lottery_numbers ln
+           JOIN users u ON u.id = ln.user_id
+           WHERE ln.status = 'sold' AND ln.sold_at IS NOT NULL AND ln.campaign_id IN (?)
+           GROUP BY ln.campaign_id, ln.user_id, u.phone, DATE_FORMAT(ln.sold_at, '%Y-%m-%d %H:%i:%s')
+           ORDER BY ln.campaign_id DESC, bet_time ASC`,
+          [campaignIds],
+        );
+        const entriesByCampaign = new Map<number, Array<Record<string, unknown>>>();
+        for (const entry of entries) {
+          const campaignId = Number(entry.campaign_id);
+          const localPhone = normalizeGhanaPhoneLocal(String(entry.phone ?? ''));
+          const maskedPhone = localPhone
+            ? `${localPhone.slice(0, 2)}****${localPhone.slice(-3)}`
+            : '***';
+          const list = entriesByCampaign.get(campaignId) ?? [];
+          list.push({
+            phone: maskedPhone,
+            betTime: String(entry.bet_time ?? ''),
+            shares: Number(entry.shares ?? 0),
+            userId: Number(entry.user_id),
+          });
+          entriesByCampaign.set(campaignId, list);
+        }
+        for (const row of rows) {
+          const campaignId = Number(row.campaign_id);
+          const winnerId = Number(row.user_id);
+          row.entries = (entriesByCampaign.get(campaignId) ?? [])
+            .filter((entry) => Number(entry.userId) !== winnerId)
+            .map(({ userId: _userId, ...entry }) => entry);
+        }
+      }
       return rows;
     } catch {
       throw new InternalServerErrorException({ error: 'Database error' });

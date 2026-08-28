@@ -155,12 +155,19 @@ export interface HistoryRecord {
     valueA: string;
     valueB: string;
     winnerPhone?: string;
+    entries: HistoryEntry[];
     serverSeedHash?: string;
     entriesHash?: string;
     publicRandomSource?: string;
     publicRandomValue?: string;
     finalHash?: string;
     proofTxHash?: string;
+}
+
+export interface HistoryEntry {
+    phone: string;
+    betTime: string;
+    shares: number;
 }
 
 export interface ApiHistoryRow {
@@ -179,6 +186,7 @@ export interface ApiHistoryRow {
     valueA: string;
     valueB: string;
     winnerPhone?: string;
+    entries?: Array<{ phone?: string; betTime?: string; bet_time?: string; shares?: number | string }>;
 }
 
 export const mapHistoryRecord = (data: ApiHistoryRow): HistoryRecord => ({
@@ -199,6 +207,11 @@ export const mapHistoryRecord = (data: ApiHistoryRow): HistoryRecord => ({
     valueA: String(data.valueA || ''),
     valueB: String(data.valueB || data.totalShares || ''),
     winnerPhone: data.winnerPhone,
+    entries: (data.entries ?? []).map((entry) => ({
+        phone: String(entry.phone ?? '***'),
+        betTime: String(entry.betTime ?? entry.bet_time ?? ''),
+        shares: Number(entry.shares ?? 0),
+    })),
 });
 
 export interface WinningRecord {

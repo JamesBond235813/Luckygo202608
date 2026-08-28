@@ -13,6 +13,7 @@ export default defineConfig({
   // 若改为主站子路径 /admin/，构建时设 VITE_BASE=/admin/
   base: process.env.VITE_BASE || '/',
   server: {
+    host: '0.0.0.0',
     port: 2089,
     strictPort: true,
     proxy: {
