@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Button, Card, Col, Input, Row, Space, Statistic, Table, Tag, Tooltip } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { ReloadOutlined } from '@ant-design/icons';
@@ -32,7 +32,7 @@ const LotteryRecords = () => {
     const [loading, setLoading] = useState(true);
     const [loadError, setLoadError] = useState('');
 
-    const fetchRows = async () => {
+    const fetchRows = useCallback(async () => {
         setLoading(true);
         setLoadError('');
         try {
@@ -44,11 +44,11 @@ const LotteryRecords = () => {
         } finally {
             setLoading(false);
         }
-    };
+    }, [t]);
 
     useEffect(() => {
         void fetchRows();
-    }, []);
+    }, [fetchRows]);
 
     const stats = useMemo(() => {
         const totalShares = rows.reduce((sum, r) => sum + (Number(r.count) || 0), 0);

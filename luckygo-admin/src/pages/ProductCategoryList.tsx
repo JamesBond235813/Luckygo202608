@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { App, Button, Form, Input, InputNumber, Modal, Space, Table } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { DeleteOutlined, EditOutlined, PlusOutlined, ReloadOutlined } from '@ant-design/icons';
@@ -18,7 +18,7 @@ const ProductCategoryList = () => {
     const [search, setSearch] = useState('');
     const [form] = Form.useForm<ProductCategoryPayload>();
 
-    const fetchCategories = async () => {
+    const fetchCategories = useCallback(async () => {
         setLoading(true);
         try {
             setCategories(await ApiClient.getProductCategories());
@@ -28,11 +28,11 @@ const ProductCategoryList = () => {
         } finally {
             setLoading(false);
         }
-    };
+    }, [message, t]);
 
     useEffect(() => {
         void fetchCategories();
-    }, []);
+    }, [fetchCategories]);
 
     const filtered = useMemo(() => {
         const q = search.toLowerCase();

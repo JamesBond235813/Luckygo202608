@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Button, DatePicker, Input, Select, Space, Table, Tag, Tooltip } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import type { Dayjs } from 'dayjs';
@@ -159,7 +159,7 @@ export function FinanceRecordsPage({
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
 
-    const fetchRows = async () => {
+    const fetchRows = useCallback(async () => {
         setLoading(true);
         setError('');
         try {
@@ -171,11 +171,11 @@ export function FinanceRecordsPage({
         } finally {
             setLoading(false);
         }
-    };
+    }, [load, t]);
 
     useEffect(() => {
         void fetchRows();
-    }, []);
+    }, [fetchRows]);
 
     const handlePaymentSearch = () => {
         setPaymentQuery({
@@ -256,7 +256,7 @@ export function FinanceRecordsPage({
                 .toLowerCase();
             return blob.includes(q);
         });
-    }, [rows, search, variant, paymentQuery, transactionQuery, t, tf]);
+    }, [rows, search, variant, paymentQuery, transactionQuery]);
 
     const paymentAmountColumns: ColumnsType<FinanceRecord> = [
         {

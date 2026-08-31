@@ -213,6 +213,8 @@ export function AdminShellProvider({ children }: { children: ReactNode }) {
 
     useEffect(() => {
         const path = normalizeTabPath(location.pathname);
+        // Route changes are the source of truth for the active tab.
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setTabs((prev) => {
             if (prev.some((t) => t.key === path)) {
                 sessionStorage.setItem(STORAGE_ACTIVE, path);
@@ -263,6 +265,7 @@ export function AdminShellProvider({ children }: { children: ReactNode }) {
     return <AdminShellContext.Provider value={value}>{children}</AdminShellContext.Provider>;
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useAdminShell() {
     const ctx = useContext(AdminShellContext);
     if (!ctx) throw new Error('useAdminShell must be used within AdminShellProvider');

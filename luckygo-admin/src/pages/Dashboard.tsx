@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
     Alert,
     Button,
@@ -39,7 +39,7 @@ const Dashboard = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
 
-    const loadData = async () => {
+    const loadData = useCallback(async () => {
         setLoading(true);
         setError('');
         try {
@@ -59,11 +59,11 @@ const Dashboard = () => {
         } finally {
             setLoading(false);
         }
-    };
+    }, [t]);
 
     useEffect(() => {
         void loadData();
-    }, []);
+    }, [loadData]);
 
     const stats = useMemo(() => {
         const totalRevenue = campaigns.reduce((sum, c) => sum + c.pricePerShare * c.sharesSold, 0);

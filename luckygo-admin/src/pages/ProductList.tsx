@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { App, Button, Form, Input, Modal, Select, Space, Table, Image } from 'antd';
 import { ImageUpload } from '../components/ImageUpload';
@@ -22,7 +22,7 @@ const ProductList = () => {
     const [search, setSearch] = useState('');
     const [form] = Form.useForm<ProductPayload>();
 
-    const fetchProducts = async () => {
+    const fetchProducts = useCallback(async () => {
         setLoading(true);
         try {
             setProducts(await ApiClient.getProducts());
@@ -32,14 +32,14 @@ const ProductList = () => {
         } finally {
             setLoading(false);
         }
-    };
+    }, [message, t]);
 
     useEffect(() => {
         void fetchProducts();
         void ApiClient.getProductCategories()
             .then(setCategories)
             .catch((e) => logUnexpectedApiError(e));
-    }, []);
+    }, [fetchProducts]);
 
     const filtered = useMemo(
         () => products.filter((p) => p.title.toLowerCase().includes(search.toLowerCase())),

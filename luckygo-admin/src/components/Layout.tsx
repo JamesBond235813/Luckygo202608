@@ -106,6 +106,8 @@ function AdminLayoutInner({ onLogout }: LayoutProps) {
 
     useEffect(() => {
         if (parentOpenKey) {
+            // The menu must follow the active route after navigation.
+            // eslint-disable-next-line react-hooks/set-state-in-effect
             setOpenKeys((prev) => (prev.includes(parentOpenKey) ? prev : [parentOpenKey]));
         }
     }, [parentOpenKey]);
