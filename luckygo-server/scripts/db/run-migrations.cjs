@@ -52,8 +52,7 @@ async function main() {
     );
     if (applied.length) {
       console.log(`[db:migrate] ${migrationName} already applied`);
-      return;
-    }
+    } else {
 
     await addColumn(connection, 'winning_records', 'fulfillment_type', "VARCHAR(16) NOT NULL DEFAULT 'pickup' AFTER status");
     await addColumn(connection, 'winning_records', 'delivery_name', 'VARCHAR(128) DEFAULT NULL AFTER fulfillment_type');
@@ -122,8 +121,28 @@ async function main() {
         description_zh = VALUES(description_zh), description_en = VALUES(description_en),
         reward_beans = VALUES(reward_beans), enabled = VALUES(enabled), sort_order = VALUES(sort_order)
     `);
-    await connection.query('INSERT INTO schema_migrations (name) VALUES (?)', [migrationName]);
-    console.log(`[db:migrate] applied ${migrationName}`);
+      await connection.query('INSERT INTO schema_migrations (name) VALUES (?)', [migrationName]);
+      console.log(`[db:migrate] applied ${migrationName}`);
+    }
+
+    const categoryBackfillMigration = '20260901_backfill_uncategorized_phone_product';
+    const [categoryBackfillApplied] = await connection.query(
+      'SELECT 1 FROM schema_migrations WHERE name = ? LIMIT 1',
+      [categoryBackfillMigration],
+    );
+    if (categoryBackfillApplied.length) {
+      console.log(`[db:migrate] ${categoryBackfillMigration} already applied`);
+    } else {
+      const [result] = await connection.query(
+        `UPDATE products
+         SET category_id = (SELECT id FROM product_categories WHERE name = 'Phones' ORDER BY id LIMIT 1)
+         WHERE id = 27 AND category_id IS NULL
+           AND EXISTS (SELECT 1 FROM product_categories WHERE name = 'Phones')`,
+      );
+      console.log(`[db:migrate] backfilled product category (${result.affectedRows} row(s))`);
+      await connection.query('INSERT INTO schema_migrations (name) VALUES (?)', [categoryBackfillMigration]);
+      console.log(`[db:migrate] applied ${categoryBackfillMigration}`);
+    }
   } finally {
     await connection.end();
   }
